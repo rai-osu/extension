@@ -1,0 +1,71 @@
+name: Build & Release
+
+on:
+  workflow_call:
+    inputs:
+      tag_name:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag to build"
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build Chrome extension
+        run: pnpm zip
+
+      - name: Build Firefox extension
+        run: pnpm zip:firefox
+
+      - name: Get artifact paths
+        id: artifacts
+        run: |
+          CHROME_ZIP=$(ls .output/*-chrome.zip)
+          FIREFOX_ZIP=$(ls .output/*-firefox.zip)
+          SOURCES_ZIP=$(ls .output/*-sources.zip)
+
+          echo "chrome=$CHROME_ZIP" >> $GITHUB_OUTPUT
+          echo "firefox=$FIREFOX_ZIP" >> $GITHUB_OUTPUT
+          echo "sources=$SOURCES_ZIP" >> $GITHUB_OUTPUT
+
+      - name: Generate build attestations
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: .output/*.zip
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name }}
+          name: "Rai Download ${{ inputs.tag_name }}"
+          files: |
+            ${{ steps.artifacts.outputs.chrome }}
+            ${{ steps.artifacts.outputs.firefox }}
+            ${{ steps.artifacts.outputs.sources }}
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

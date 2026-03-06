@@ -1,0 +1,73 @@
+name: Publish to Stores
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag to publish"
+        required: true
+        type: string
+      dry_run:
+        description: "Dry run (test without publishing)"
+        required: false
+        type: boolean
+        default: true
+      chrome:
+        description: "Publish to Chrome Web Store"
+        required: false
+        type: boolean
+        default: true
+      firefox:
+        description: "Publish to Firefox Add-ons"
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag_name }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build extensions
+        run: |
+          pnpm zip
+          pnpm zip:firefox
+
+      - name: Submit to Chrome Web Store
+        if: ${{ inputs.chrome }}
+        run: |
+          pnpm wxt submit \
+            ${{ inputs.dry_run && '--dry-run' || '' }} \
+            --chrome-zip .output/*-chrome.zip
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+
+      - name: Submit to Firefox Add-ons
+        if: ${{ inputs.firefox }}
+        run: |
+          pnpm wxt submit \
+            ${{ inputs.dry_run && '--dry-run' || '' }} \
+            --firefox-zip .output/*-firefox.zip \
+            --firefox-sources-zip .output/*-sources.zip
+        env:
+          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
