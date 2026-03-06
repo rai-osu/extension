@@ -9,10 +9,10 @@ Browser extension for the [rai.moe](https://rai.moe) beatmap mirror. Adds downlo
 
 ## Installation
 
-| Browser | Install               |
-| ------- | --------------------- |
-| Chrome  | [Chrome Web Store](#) |
-| Firefox | [Firefox Add-ons](#)  |
+| Browser | Install                                                                                       |
+| ------- | --------------------------------------------------------------------------------------------- |
+| Chrome  | [Chrome Web Store](https://chromewebstore.google.com/detail/kbagkikmefjamjkdhnbbjagkehfhbedf) |
+| Firefox | [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/rai-download/)               |
 
 Or load unpacked from [GitHub Releases](https://github.com/rai-osu/extension/releases).
 
