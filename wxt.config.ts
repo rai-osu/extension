@@ -5,7 +5,7 @@ export default defineConfig({
   manifest: {
     name: 'Rai Download',
     description: 'Download osu! beatmaps from the rai.moe mirror',
-    version: '0.0.0', // x-release-please-version
+    version: '1.0.0', // x-release-please-version
     permissions: [],
     host_permissions: [
       'https://osu.ppy.sh/*',
