@@ -61,7 +61,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag_name }}
-          name: "Rai Download ${{ inputs.tag_name }}"
+          name: ${{ inputs.tag_name }}
           files: |
             ${{ steps.artifacts.outputs.chrome }}
             ${{ steps.artifacts.outputs.firefox }}
